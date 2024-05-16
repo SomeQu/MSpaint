@@ -1,15 +1,21 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { afterUpdate, onMount, setContext } from "svelte";
     import drawTriangle from './tools/drawTriangle'
     import drawCircle from './tools/drawCircle'
     import drawSquare from './tools/drawSquare'
+  import Colors from "./components/Colors.svelte";
+  import MainColor from "./components/mainColor.svelte";
+  import SecondColor from "./components/secondColor.svelte";
+  import { writable, type Writable } from "svelte/store";
     let canvas: HTMLCanvasElement;
     let crc2d: CanvasRenderingContext2D | null; 
     let isDrawing = false;
     let x = 0;
     let y = 0;
-    let colorValue='#000000'
-    let fillColorValue= '#ffffff'
+    let colorValue:Writable<string | CanvasGradient | CanvasPattern>=writable('#000000')
+    let fillColorValue= writable('#ffffff')
+    setContext("colorValue",colorValue)
+    setContext("fillColorValue",fillColorValue)
     let penStyle = 'Pencil';
     let line = 1;
     let circleCenterX:any
@@ -24,8 +30,7 @@
     } else if (penStyle === 'Square') {
         
     } else if (penStyle === 'Circle') {
-        circleCenterX = x;
-        circleCenterY = y;
+   
     }
 }
 
@@ -41,7 +46,7 @@ const onMouseUp = (e: MouseEvent) => {
         drawSquare(crc2d,x, y, canvasX, canvasY);
     } else if (penStyle === 'Circle') {
         const radius = Math.sqrt(Math.pow(x - circleCenterX, 2) + Math.pow(y - circleCenterY, 2));
-        drawCircle(crc2d,circleCenterX, circleCenterY, radius);
+        // drawCircle(crc2d,circleCenterX, circleCenterY, radius);
     }else if (penStyle==='Triangle'){
         drawTriangle(crc2d,x,y,canvasX,canvasY)
     }
@@ -50,6 +55,7 @@ const onMouseUp = (e: MouseEvent) => {
 const onMouseMove = (e: MouseEvent) => {
     if (!isDrawing) return;
     if (penStyle === 'Pencil') {
+        
         crc2d?.beginPath();
         crc2d?.moveTo(x, y);
         x = e.offsetX;
@@ -67,22 +73,22 @@ const onMouseMove = (e: MouseEvent) => {
         canvas = document.getElementById("canvas") as HTMLCanvasElement;
         crc2d = canvas.getContext('2d');
         if (crc2d !== null) {
-            crc2d.strokeStyle = colorValue;
-            crc2d.fillStyle = fillColorValue;
+            crc2d.strokeStyle = $colorValue;
+            crc2d.fillStyle = $fillColorValue;
             crc2d.lineWidth = line;
         }
     });
-
+    $:console.log('$colorValue :>> ', $colorValue);
     const getColor = (e: any) => {
-        colorValue = e.target.value;
+        $colorValue = e.target.value;
         if (crc2d !== null) {
-            crc2d.strokeStyle = colorValue;
+            crc2d.strokeStyle = $colorValue;
         }
     }
     const getFillColor = (e: any) => {
-        fillColorValue = e.target.value;
+        $fillColorValue = e.target.value;
         if (crc2d !== null) {
-            crc2d.fillStyle = fillColorValue;
+          
         }
     }
     const getLineWidth = (e: any) => {
@@ -91,7 +97,10 @@ const onMouseMove = (e: MouseEvent) => {
             crc2d.lineWidth = line;
         }
     }
-
+    afterUpdate(()=>{
+        crc2d!.strokeStyle=$colorValue
+        crc2d!.fillStyle = $fillColorValue;
+    })
     const changePen = (e: any) => {
         penStyle = e.target.innerText;
     }
@@ -101,7 +110,10 @@ const onMouseMove = (e: MouseEvent) => {
             crc2d.clearRect(0, 0, canvas.width, canvas.height);
         }
     }
-
+const onRClick = (e) =>{
+  
+    e.preventDefault()
+}
 
 
 
@@ -113,14 +125,24 @@ const onMouseMove = (e: MouseEvent) => {
                 width="700"
                 height="500" 
                 bind:this={canvas} 
-                style="border:1px solid red"
+                style="border:1px solid black"
+                on:contextmenu={onRClick}
                 on:mousedown={onMouseDown} 
                 on:mouseup={onMouseUp} 
                 on:mousemove={onMouseMove} 
         />
-        <input on:change={getColor} value="#000000" type="color">
-        <input on:change={getFillColor} value="#ffffff" type="color">
-        <input on:change={getLineWidth} type="range" value="1" step="1" min="1" max="10" name="" id="1">
+        <div class="main">
+
+            <MainColor/>
+            <input on:change={getColor} value={$colorValue} type="color" name="" id="">
+        </div>
+        <div class="main">
+
+            <SecondColor/>
+            <input on:change={getFillColor}  value={$fillColorValue} type="color" name="" id="">
+        </div>
+        <Colors/>
+        <input on:change={getLineWidth}  type="range" value="1" step="1" min="1" max="10" name="" id="1">
         <button on:click={changePen}>Pencil</button>
         <button on:click={changePen}>Line</button>
         <button on:click={changePen}>Square</button>
@@ -133,5 +155,9 @@ const onMouseMove = (e: MouseEvent) => {
 <style lang="scss">
     canvas {
         cursor: crosshair;
+    }
+    .main{
+        display: flex;
+        align-items: center;
     }
 </style>

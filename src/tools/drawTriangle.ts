@@ -10,7 +10,7 @@ const drawTriangle = (
   context?.lineTo(endX, y);
   context?.lineTo((x + endX) / 2, endY);
   context?.closePath();
-  context?.stroke();
   context?.fill();
+  context?.stroke();
 };
 export default drawTriangle;
