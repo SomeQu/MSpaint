@@ -1,54 +1,74 @@
 <script lang="ts">
     import { onMount } from "svelte";
-  
+    import drawTriangle from './tools/drawTriangle'
+    import drawCircle from './tools/drawCircle'
+    import drawSquare from './tools/drawSquare'
     let canvas: HTMLCanvasElement;
     let crc2d: CanvasRenderingContext2D | null; 
     let isDrawing = false;
     let x = 0;
     let y = 0;
     let colorValue='#000000'
-    let penStye = 'Pencil'
+    let fillColorValue= '#ffffff'
+    let penStyle = 'Pencil';
     let line = 1;
-
+    let circleCenterX:any
+    let circleCenterY:any
     const onMouseDown = (e: MouseEvent) => {
-        isDrawing = true;
-        x = e.clientX;
-        y = e.clientY;
-        if (penStye === 'Line') {
-            crc2d?.beginPath();
-            crc2d?.moveTo(x, y);
-        }
+    isDrawing = true;
+    x = e.offsetX;
+    y = e.offsetY;
+    if (penStyle === 'Line') {
+        crc2d?.beginPath();
+        crc2d?.moveTo(x, y);
+    } else if (penStyle === 'Square') {
+        
+    } else if (penStyle === 'Circle') {
+        circleCenterX = x;
+        circleCenterY = y;
     }
+}
 
-    const onMouseUp = (e: MouseEvent) => {
-        isDrawing = false;
-        if (penStye === 'Line') {
-            crc2d?.lineTo(e.clientX, e.clientY);
-            crc2d?.stroke();
-            crc2d?.closePath();
-        }
+const onMouseUp = (e: MouseEvent) => {
+    isDrawing = false;
+    const canvasX = e.offsetX;
+    const canvasY = e.offsetY;
+    if (penStyle === 'Line') {
+        crc2d?.lineTo(canvasX, canvasY);
+        crc2d?.stroke();
+        crc2d?.closePath();
+    } else if (penStyle === 'Square') {
+        drawSquare(crc2d,x, y, canvasX, canvasY);
+    } else if (penStyle === 'Circle') {
+        const radius = Math.sqrt(Math.pow(x - circleCenterX, 2) + Math.pow(y - circleCenterY, 2));
+        drawCircle(crc2d,circleCenterX, circleCenterY, radius);
+    }else if (penStyle==='Triangle'){
+        drawTriangle(crc2d,x,y,canvasX,canvasY)
     }
+}
   
-    const onMouseMove = (e: MouseEvent) => {
-        if (!isDrawing) return;
-        if (penStye === 'Pencil') {
-            crc2d?.beginPath();
-            crc2d?.moveTo(x, y);
-            crc2d?.lineTo(e.clientX, e.clientY);
-            crc2d?.stroke();
-            x = e.clientX;
-            y = e.clientY;
-        } else if (penStye === 'Line') {
-       
-            // drawLine(x, e.clientX, y, e.clientY);
-        }
+const onMouseMove = (e: MouseEvent) => {
+    if (!isDrawing) return;
+    if (penStyle === 'Pencil') {
+        crc2d?.beginPath();
+        crc2d?.moveTo(x, y);
+        x = e.offsetX;
+        y = e.offsetY;
+        crc2d?.lineTo(x, y);
+        crc2d?.stroke();
+    } else if (penStyle === 'Line') {
+        
+    } else if (penStyle === 'Square') {
+      
     }
+}
 
     onMount(() => {
         canvas = document.getElementById("canvas") as HTMLCanvasElement;
         crc2d = canvas.getContext('2d');
         if (crc2d !== null) {
             crc2d.strokeStyle = colorValue;
+            crc2d.fillStyle = fillColorValue;
             crc2d.lineWidth = line;
         }
     });
@@ -59,7 +79,12 @@
             crc2d.strokeStyle = colorValue;
         }
     }
-
+    const getFillColor = (e: any) => {
+        fillColorValue = e.target.value;
+        if (crc2d !== null) {
+            crc2d.fillStyle = fillColorValue;
+        }
+    }
     const getLineWidth = (e: any) => {
         line = e.target.value;
         if (crc2d !== null) {
@@ -68,22 +93,18 @@
     }
 
     const changePen = (e: any) => {
-        penStye = e.target.innerText;
+        penStyle = e.target.innerText;
     }
 
-    // const drawLine = (x1: number, x2: number, y1: number, y2: number) => {
-    //     if (crc2d !== null) {
-    //         clearPainting(crc2d);
-    //         crc2d.beginPath();
-    //         crc2d.moveTo(x1, y1);
-    //         crc2d.lineTo(x2, y2);
-    //         crc2d.stroke();
-    //     }
-    // }
-
-    const clearPainting = (ctx: CanvasRenderingContext2D) => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const clearPainting = () => {
+        if (crc2d !== null) {
+            crc2d.clearRect(0, 0, canvas.width, canvas.height);
+        }
     }
+
+
+
+
 </script>
 
 <div class="container">
@@ -97,15 +118,20 @@
                 on:mouseup={onMouseUp} 
                 on:mousemove={onMouseMove} 
         />
-        <input on:change={getColor} type="color">
-        <input on:change={getLineWidth} type="range" value="1" step="1" min="1" max="10" name="" id="">
+        <input on:change={getColor} value="#000000" type="color">
+        <input on:change={getFillColor} value="#ffffff" type="color">
+        <input on:change={getLineWidth} type="range" value="1" step="1" min="1" max="10" name="" id="1">
         <button on:click={changePen}>Pencil</button>
         <button on:click={changePen}>Line</button>
+        <button on:click={changePen}>Square</button>
+        <button on:click={changePen}>Cirlce</button>
+        <button on:click={changePen}>Triangle</button>
+        <button on:click={clearPainting}>Clear</button>
     </div>
 </div>
 
 <style lang="scss">
-    canvas{
+    canvas {
         cursor: crosshair;
     }
 </style>
