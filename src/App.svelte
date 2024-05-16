@@ -51,7 +51,7 @@ const onMouseUp = (e: MouseEvent) => {
         drawTriangle(crc2d,x,y,canvasX,canvasY)
     }
 }
-  
+
 const onMouseMove = (e: MouseEvent) => {
     if (!isDrawing) return;
     if (penStyle === 'Pencil') {
@@ -114,9 +114,45 @@ const onRClick = (e) =>{
   
     e.preventDefault()
 }
+const saveImage = () =>{
+   
+    let canvasImage = canvas.toDataURL('image/png');
+    
 
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.onload =  () =>{
+        let a = document.createElement('a');
+        a.href = window.URL.createObjectURL(xhr.response);
+        a.download = 'image_name.png';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+      xhr.open('GET', canvasImage);
+      xhr.send();
+}
 
+const beforeUnloadHandler = (e) => {
+    if(e){
+        e.returnValue = 'Sure?';
+    }
+  e.preventDefault();
 
+  e.returnValue = true;
+};
+function isCanvasBlank(canvas) {
+  return !canvas?.getContext('2d')
+    .getImageData(0, 0, canvas.width, canvas.height).data
+    .some((channel:any) => channel !== 0);
+}
+$:if(isCanvasBlank(canvas)){
+    window.addEventListener("beforeunload", beforeUnloadHandler);
+
+}else{
+    window.removeEventListener("beforeunload", beforeUnloadHandler);
+}
 </script>
 
 <div class="container">
@@ -125,7 +161,8 @@ const onRClick = (e) =>{
                 width="700"
                 height="500" 
                 bind:this={canvas} 
-                style="border:1px solid black"
+                style="border:1px solid black;background-color:white"
+
                 on:contextmenu={onRClick}
                 on:mousedown={onMouseDown} 
                 on:mouseup={onMouseUp} 
@@ -149,6 +186,7 @@ const onRClick = (e) =>{
         <button on:click={changePen}>Cirlce</button>
         <button on:click={changePen}>Triangle</button>
         <button on:click={clearPainting}>Clear</button>
+        <button on:click={saveImage}>Save</button>
     </div>
 </div>
 
