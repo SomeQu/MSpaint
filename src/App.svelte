@@ -152,12 +152,12 @@
             <div class="colors">
                 <div class="mains">
                     <div class="main">
-                        <MainColor />
-                        <input on:change={(e)=>{getColor(e,$colorValue,crc2d)}} value={$colorValue} type="color" name="" id="">
+                        <MainColor context={crc2d} />
+                        
                     </div>
                     <div class="main">
-                        <SecondColor />
-                        <input on:change={(e)=>{getFillColor(e,$fillColorValue,crc2d)}} value={$fillColorValue} type="color" name="" id="">
+                        <SecondColor context={crc2d}/>
+                      
                     </div>
                 </div>
                 <Colors />
@@ -202,7 +202,7 @@
 .colors{
     display: flex;
     align-items: center;
-    gap: 15px;
+
     justify-content: space-between;
     padding: 20px;
     .mains{
