@@ -2,11 +2,21 @@ const drawSquare = (
   context: CanvasRenderingContext2D | null,
   startX: number,
   startY: number,
-  endX: number,
-  endY: number
+  width: number,
+  height: number,
+  canvas: HTMLCanvasElement,
+  saveCanvas: string
 ) => {
-  const width = endX - startX;
-  const height = endY - startY;
+  const img = new Image();
+  img.src = saveCanvas;
+  img.onload = () => {
+    context?.clearRect(0, 0, canvas.width, canvas.height);
+    context?.drawImage(img, 0, 0, canvas.width, canvas.height);
+    context?.beginPath();
+    context?.rect(startX, startY, width, height);
+    context?.fill();
+    context?.stroke();
+  };
   context?.beginPath();
   context?.rect(startX, startY, width, height);
   context?.fill();

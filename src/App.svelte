@@ -12,18 +12,26 @@
     let isDrawing = false;
     let x = 0;
     let y = 0;
+    let startX:number
+    let startY :number
+    let canvasX :number
+    let canvasY:number
     let colorValue:Writable<string | CanvasGradient | CanvasPattern>=writable('#000000')
     let fillColorValue= writable('#ffffff')
     setContext("colorValue",colorValue)
     setContext("fillColorValue",fillColorValue)
     let penStyle = 'Pencil';
     let line = 1;
-    let circleCenterX:any
-    let circleCenterY:any
+
+        let saveCanvas:string
     const onMouseDown = (e: MouseEvent) => {
+        const ev = e.target as HTMLTextAreaElement
+          saveCanvas = canvas.toDataURL()
     isDrawing = true;
     x = e.offsetX;
     y = e.offsetY;
+    startX = e.pageX - ev.offsetLeft;
+     startY = e.pageY - ev.offsetTop;
     if (penStyle === 'Line') {
         crc2d?.beginPath();
         crc2d?.moveTo(x, y);
@@ -36,26 +44,31 @@
 
 const onMouseUp = (e: MouseEvent) => {
     isDrawing = false;
-    const canvasX = e.offsetX;
-    const canvasY = e.offsetY;
+    
     if (penStyle === 'Line') {
         crc2d?.lineTo(canvasX, canvasY);
         crc2d?.stroke();
         crc2d?.closePath();
     } else if (penStyle === 'Square') {
-        drawSquare(crc2d,x, y, canvasX, canvasY);
+    
     } else if (penStyle === 'Circle') {
-        const radius = Math.sqrt(Math.pow(x - circleCenterX, 2) + Math.pow(y - circleCenterY, 2));
-        // drawCircle(crc2d,circleCenterX, circleCenterY, radius);
+        
     }else if (penStyle==='Triangle'){
-        drawTriangle(crc2d,x,y,canvasX,canvasY)
+        
     }
 }
 
 const onMouseMove = (e: MouseEvent) => {
+    const ev = e.target as HTMLTextAreaElement
+    let currentX = e.pageX - ev.offsetLeft;
+            let currentY = e.pageY - ev.offsetTop;
+            const canvasX = e.offsetX;
+    const canvasY = e.offsetY;
+            const width = currentX - startX;
+            const height = currentY - startY;
+            const radius = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
     if (!isDrawing) return;
     if (penStyle === 'Pencil') {
-        
         crc2d?.beginPath();
         crc2d?.moveTo(x, y);
         x = e.offsetX;
@@ -65,7 +78,12 @@ const onMouseMove = (e: MouseEvent) => {
     } else if (penStyle === 'Line') {
         
     } else if (penStyle === 'Square') {
-      
+           
+            drawSquare(crc2d,startX,startY,width,height,canvas,saveCanvas)
+    }else if(penStyle==='Circle'){
+            drawCircle(crc2d,startX,startY,radius,canvas,saveCanvas)
+    }else if (penStyle==='Triangle'){
+        drawTriangle(crc2d,canvasX,canvasY,x,y)
     }
 }
 
@@ -183,7 +201,7 @@ $:if(isCanvasBlank(canvas)){
         <button on:click={changePen}>Pencil</button>
         <button on:click={changePen}>Line</button>
         <button on:click={changePen}>Square</button>
-        <button on:click={changePen}>Cirlce</button>
+        <button on:click={changePen}>Circle</button>
         <button on:click={changePen}>Triangle</button>
         <button on:click={clearPainting}>Clear</button>
         <button on:click={saveImage}>Save</button>
