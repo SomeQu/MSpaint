@@ -10,8 +10,8 @@
         '#8080c0', '#8080ff', '#c0c0c0','#c1c1c1', '#ffffff'
     ];
 
-    const colorValue = getContext("colorValue");
-    const fillColorValue = getContext("fillColorValue");
+    let colorValue = getContext("colorValue");
+    let fillColorValue = getContext("fillColorValue");
 
     const chooseColor = (e: any) => {
         $colorValue=e.target.id
@@ -43,6 +43,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        border: 2px solid black;
+        border: 1px solid black;
     }
 </style>

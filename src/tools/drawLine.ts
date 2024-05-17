@@ -1,21 +1,23 @@
-const drawSquare = (
+const drawLine = (
+  e: MouseEvent,
   context: CanvasRenderingContext2D | null,
-  startX: number,
-  startY: number,
-  width: number,
-  height: number,
+  x: number,
+  y: number,
   canvas: HTMLCanvasElement,
   saveCanvas: string
 ) => {
-  const img: HTMLImageElement = new Image();
+  const img = new Image();
   img.src = saveCanvas;
   img.onload = () => {
     context?.clearRect(0, 0, canvas.width, canvas.height);
     context?.drawImage(img, 0, 0, canvas.width, canvas.height);
     context?.beginPath();
-    context?.rect(startX, startY, width, height);
-    context?.fill();
+    context?.moveTo(x, y);
+
+    x = e.offsetX;
+    y = e.offsetY;
+    context?.lineTo(x, y);
     context?.stroke();
   };
 };
-export default drawSquare;
+export default drawLine;
